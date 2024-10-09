@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js in Qt</title>
+    <style> body { margin: 0; } </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script> <!-- Подключаем qwebchannel.js -->
+    <script>
+        // Создание сцены
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Создание куба
+        var geometry = new THREE.BoxGeometry();
+        var material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+        var cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+
+        camera.position.z = 5;
+
+// Обрабатываем клик правой кнопкой мыши по объекту
+        /*document.addEventListener('contextmenu', function (event) {
+            event.preventDefault(); // Отключаем стандартное контекстное меню
+
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObject(cube);
+
+            if (intersects.length > 0) {
+                // Передаем координаты куба в Qt
+                if (typeof qt !== 'undefined') {
+                    qt.webChannelTransport.send(JSON.stringify({
+                        type: "positionUpdate",  // Обязательно добавляем поле type
+                        object: "cube",
+                        position: intersects[0].object.position
+                    }));
+                }
+            }
+        });*/
+
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            var qtObject = channel.objects.qtObject;  // Получаем зарегистрированный объект
+
+            document.addEventListener('contextmenu', function (event) {
+                event.preventDefault(); // Отключаем стандартное контекстное меню
+
+                var raycaster = new THREE.Raycaster();
+                var mouse = new THREE.Vector2();
+
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                var intersects = raycaster.intersectObject(cube);
+
+                if (intersects.length > 0) {
+                    // Передаем координаты куба в зарегистрированный объект Qt
+                    qtObject.receivePositionUpdate(intersects[0].object.position.x,
+                                                   intersects[0].object.position.y,
+                                                   intersects[0].object.position.z);
+                    qtObject.receiveIntersectPoint(intersects[0].point.x,
+                                                  intersects[0].point.y,
+                                                  intersects[0].point.z);
+                }
+            });
+        });
+
+
+        var animate = function () {
+            requestAnimationFrame(animate);
+
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+
+            renderer.render(scene, camera);
+        };
+
+        animate();
+		
+		 // Функция для изменения цвета квадрата
+        function changeCubeColor(hexColor) {
+            cube.material.color.setHex(hexColor);
+        }
+    </script>
+</body>
+</html>

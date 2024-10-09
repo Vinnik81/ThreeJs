@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>threejs.html</file>
+        <file>qtwebchannel/qwebchannel.js</file>
+    </qresource>
+</RCC>
