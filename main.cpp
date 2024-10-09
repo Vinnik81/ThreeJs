@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QWebChannel>
+#include <QtMath>
 
 class CoordinateReceiver : public QObject
 {
@@ -38,7 +39,7 @@ public slots:
     // Слот для получения данных от JavaScript
     void receiveIntersectPoint(double x, double y, double z) {
         qDebug() << "Intersect point received from JavaScript:" << x << y << z;
-        QColor color = QColor::fromRgbF(abs(x), abs(y), abs(z));
+        QColor color = QColor::fromRgbF(fabs(x), fabs(y), fabs(z));
 
         emit coordinatesChanged(QString("X: %1, Y: %2, Z: %3").arg(x).arg(y).arg(z), color);
     }
